@@ -12,7 +12,10 @@ model_periods:
 
 sqlite_schema: "temoa_schema_v3_1.sql"
 sqlite_database: "cef.sqlite"
+
+# Switches
 force_wipe_database: true
+build_test_model: true
 
 # Which CEF scenario to pull data for
 # "Current Measures", "Canada Net-zero", or "Global Net-zero"
@@ -20,6 +23,5 @@ scenario: "Global Net-zero"
 
 energy_units: "PJ"
 conversion_factor: 1
-decimal_places: 1
-zero_thresh: 0.5 # Fuel demands below this become zero
-split_thresh: 0.01 # Fuel proportions below this become zero
+decimal_places: 2
+prop_thresh: 0.02 # Fuel proportions below this become zero

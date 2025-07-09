@@ -7,34 +7,25 @@ import os
 import pandas as pd
 import yaml
 import sqlite3
-import numpy as np
-import urllib.request 
 
+
+
+def build_schema():
+    conn = sqlite3.connect(config.database_file)
+    conn.executescript(open(config.schema_file, 'r').read())
+    conn.commit()
+    conn.close()
 
 
 def instantiate_database():
-    
     # Check if database exists or needs to be built
-    build_db = not os.path.exists(config.database_file)
-
-    # Connect to the new database file
-    conn = sqlite3.connect(config.database_file)
-    curs = conn.cursor() # Cursor object interacts with the sqlite db
-
-    # Build the database if it doesn't exist. Otherwise clear all data if forced
-    if build_db: curs.executescript(open(config.schema_file, 'r').read())
-    elif config.params['force_wipe_database']:
-        tables = [t[0] for t in curs.execute("""SELECT name FROM sqlite_master WHERE type='table';""").fetchall()]
-        for table in tables: curs.execute(f"DELETE FROM '{table}'")
-        print("Database wiped prior to aggregation. See params.\n")
-
-    conn.commit()
-
-    # VACUUM operation to clean up any empty rows
-    conn.execute("VACUUM;")
-    conn.commit()
-
-    conn.close()
+    if os.path.exists(config.database_file):
+        if config.params['force_wipe_database']:
+            print('Database wiped prior to aggregation.')
+            os.remove(config.database_file)
+            build_schema()
+    else:
+        build_schema()
 
 
 

@@ -1,6 +1,7 @@
 import pandas as pd
 import sqlite3
 from setup import config
+from itertools import product
 
 def build():
     conn = sqlite3.connect(config.database_file)
@@ -38,27 +39,39 @@ def build():
     df_cef['comm'] = df_cef['Variable'].map(commodity_map, na_action='ignore')
     df_cef['tech'] = df_cef['tag'] + '_' + df_cef['tech']
     df_cef['comm'] = df_cef['tag'] + '_' + df_cef['comm']
-    df_cef['year'] = df_cef['Year']
+    df_cef['period'] = df_cef['Year']
 
     # Convert energy units and filter out tiny values
     df_cef['value'] = df_cef['Value'] * config.params['conversion_factor']
-    df_cef['value'] = df_cef['value'].mask(df_cef['value'] < config.params['zero_thresh'], other=0)
+    df_cef['value'] = df_cef['value'].round(config.params['decimal_places'])
 
-    # Remove any zero-flow streams
-    df = df_cef.groupby(['region','tech','comm'])['value']
+    # Get the total energy for each process in each period
+    df_sum = df_cef.groupby(['region','tech','period'])['value'].sum()
+
+    # Filter out zero or tiny streams
+    df = df_cef.groupby(['region','tech','comm'])[['period','value']]
     to_drop = set()
-    for idx, _df in df:
-        if _df.sum() == 0: to_drop.add(idx)
+    for (region, tech, comm), _df in df:
+        # Drop if this commodity isn't used by this sector in this region
+        if _df['value'].sum() == 0:
+            to_drop.add((region, tech, comm))
+            continue
+        _df = _df.set_index('period')
+        _df['prop'] = [value.iloc[0] / df_sum.loc[(region, tech, period)] for period, value in _df.iterrows()]
+        _df['keep'] = _df['prop'] >= config.params['prop_thresh']
+
+        # Drop if this commodity doesn't meet the proportion threshold
+        if _df['keep'].sum() == 0:
+            to_drop.add((region, tech, comm))
+            continue
     df_cef = df_cef.set_index(['region','tech','comm'])
     df_cef = df_cef[~df_cef.index.isin(to_drop)]
+    df_cef = df_cef.reset_index()
 
     # Group indices nicely
     df_cef = df_cef.reset_index()
-    df_cef = df_cef.set_index(['region','tech','year','comm'])['value']
+    df_cef = df_cef.set_index(['region','tech','period','comm'])['value']
     df_cef = df_cef.sort_index()
-
-    print(df_cef)
-    df_cef.to_csv('test.csv')
 
     # Add sectors
     for tech in df_cef.index.get_level_values('tech').unique():
@@ -66,8 +79,8 @@ def build():
         
         # Technology
         sql = (
-            'REPLACE INTO Technology(tech, flag, sector, unlim_cap, description) '
-            f'VALUES("{tech}", "p", "{sector["sector"]}", 1, "{sector["tech_desc"]}")'
+            'REPLACE INTO Technology(tech, flag, sector, unlim_cap, annual, description) '
+            f'VALUES("{tech}", "p", "{sector["sector"]}", 1, 1, "{sector["tech_desc"]}")'
         )
         curs.execute(sql)
 
@@ -82,7 +95,7 @@ def build():
         dem_comm = f'{tech.split("_")[0]}_D_{tech.split("_")[1].lower()}'
         sql = (
             'REPLACE INTO Commodity(name, flag, description) '
-            f'VALUES("{dem_comm}", "a", "({config.params["energy_units"]}) {sector["sector"]} energy demand")'
+            f'VALUES("{dem_comm}", "d", "({config.params["energy_units"]}) {sector["sector"]} energy demand")'
         )
         curs.execute(sql)
 
@@ -102,7 +115,7 @@ def build():
         curs.execute(sql)
 
     # 2025 vintage processes for all techs
-    for region, tech, comm in df_cef.xs(2025, level='year').index:
+    for region, tech, comm in df_cef.xs(2025, level='period').index:
         dem_comm = f'{tech.split("_")[0]}_D_{tech.split("_")[1].lower()}'
 
         # Efficiency
@@ -113,7 +126,7 @@ def build():
         curs.execute(sql)
 
     # Demands for each sector
-    for (region, tech, period), demand in df_cef.reset_index().groupby(['region','tech','year']):
+    for (region, tech, period), demand in df_cef.reset_index().groupby(['region','tech','period']):
 
         demand = demand.round(config.params['decimal_places'])
         dem_tot = round(demand['value'].sum(), config.params['decimal_places'])
@@ -128,18 +141,95 @@ def build():
         
         # LimitTechInputSplitAnnual
         for _, row in demand.iterrows():
-            prop = round(row['value'] / dem_tot, 2)
-            if prop < config.params['split_thresh']: continue
+            prop = row['value'] / dem_tot
+            # prop = round(prop, config.params['decimal_places'])
             sql = (
                 'REPLACE INTO LimitTechInputSplitAnnual(region, period, input_comm, tech, operator, proportion) '
                 f'VALUES("{region}", {period}, "{row["comm"]}", "{tech}", "le", {prop})'
             ) # <= should, in theory, be least likely to cause infeasibility / numerical issues?
             curs.execute(sql)
 
+    # DSDs (only affects electricity) TODO later?
 
-    # DSDs (only affects electricity)
+    conn.commit()
 
-    # Tech input splits
+    if config.params['build_test_model']:
+        region_comms = set([tuple(rc) for rc in df_cef.reset_index()[['region','comm']].values])
+        build_tester(region_comms)
+
+
+def build_tester(region_comms):
+
+    conn = sqlite3.connect(config.database_file)
+    curs = conn.cursor()
+
+    for region in config.model_regions:
+        sql = (
+            'REPLACE INTO Region(region) '
+            f'VALUES("{region}")'
+        )
+        curs.execute(sql)
+
+    # TimePeriod
+    for i, period in enumerate(config.model_periods):
+        sql = (
+            'REPLACE INTO TimePeriod(sequence, period, flag) '
+            f'VALUES({i}, {period}, "f")'
+        )
+        curs.execute(sql)
+        sql = (
+            'REPLACE INTO TimeSeason(period, sequence, season) '
+            f'VALUES({period}, 0, "S")'
+        )
+        curs.execute(sql)
+        sql = (
+            'REPLACE INTO TimeSegmentFraction(period, season, tod, segfrac) '
+            f'VALUES({period}, "S", "D", 1)'
+        )
+        curs.execute(sql)
+    sql = (
+        'REPLACE INTO TimePeriod(sequence, period, flag) '
+        f'VALUES({i+1}, {period+5}, "f")'
+    )
+    curs.execute(sql)
+
+    # Time slices
+    sql = (
+        'REPLACE INTO SeasonLabel(season) '
+        f'VALUES("S")'
+    )
+    curs.execute(sql)
+    sql = (
+        'REPLACE INTO TimeOfDay(sequence, tod) '
+        f'VALUES(0, "D")'
+    )
+    curs.execute(sql)
+    
+
+    sql = (
+        'REPLACE INTO Commodity(name, flag, description) '
+        'VALUES("ethos", "s", "(PJ) dummy")'
+    )
+    curs.execute(sql)
+    sql = (
+        'REPLACE INTO Technology(tech, flag, sector, unlim_cap, annual) '
+        'VALUES("IMPORT", "p", "import", 1, 1)'
+    )
+    curs.execute(sql)
+    
+    for region, comm in region_comms:
+        sql = (
+            'REPLACE INTO Efficiency(region, input_comm, tech, vintage, output_comm, efficiency) '
+            f'VALUES("{region}", "ethos", "IMPORT", 2025, "{comm}", 1.0)'
+        )
+        curs.execute(sql)
+
+        for period in config.model_periods:
+            sql = (
+                'REPLACE INTO CostVariable(region, period, tech, vintage, cost) '
+                f'VALUES("{region}", {period}, "IMPORT", 2025, 1)'
+            )
+            curs.execute(sql)
 
     conn.commit()
 
