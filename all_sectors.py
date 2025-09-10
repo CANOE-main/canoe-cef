@@ -284,12 +284,29 @@ def build_metadata():
                 VALUES('{reference.id}', '{reference.citation}', "{config.data_id(sector)}")"""
             )
 
-    for id in config.data_ids:
+    # Add datasets to DataSet table, waiting for other metadata
+    for id in sorted(config.data_ids):
         curs.execute(
             f"""REPLACE INTO
             DataSet(data_id)
             VALUES('{id}')"""
         )
+
+    # Check for missing data IDs
+    print("Checking that all data has a dataset ID...", end="")
+    tables = [t[0] for t in curs.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()]
+
+    all_good = True
+    for table in tables:
+        cols = [c[1] for c in curs.execute(f"PRAGMA table_info({table})").fetchall()]
+        if "data_id" in cols:
+            bad_rows = pd.read_sql_query(f"SELECT * FROM {table} WHERE data_id is NULL", conn)
+            if len(bad_rows) > 0:
+                print(f"\nFound some rows missing data IDs in {table}")
+                print(bad_rows)
+                all_good = False
+
+    if all_good: print(" All good!")
         
     conn.commit()
     conn.close()
