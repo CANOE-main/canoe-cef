@@ -5,7 +5,7 @@ h2,Hydrogen,hydrogen,TRUE,a
 ng,Natural Gas,natural gas,TRUE,a
 oth,Other,other,FALSE,a
 rpp,RPP,refined petroleum products,TRUE,a
-jfl,Aviation Fuel,aviation fuel,TRUE,a
+jft,Aviation Fuel,aviation fuel,TRUE,a
 bio,Biofuels,biofuel,TRUE,a
 dsl,Diesel,diesel,TRUE,a
 hfo,Heavy Fuel Oil,heavy fuel oil,TRUE,a
