@@ -135,7 +135,7 @@ class config:
     def _get_files(cls):
 
         config.schema_file = config.input_files + config.params['sqlite_schema']
-        config.database_file = config._this_dir + config.params['sqlite_database']
+        config.database_file = config.params['sqlite_database']
         instantiate_database()
 
 
