@@ -77,10 +77,11 @@ def build_sectors():
         if _df['keep'].sum() == 0:
             to_drop.add((region, tech, comm))
             continue
+    
     df_cef = df_cef.set_index(['region','tech','comm'])
     df_cef = df_cef[~df_cef.index.isin(to_drop)]
     df_cef = df_cef.reset_index()
-
+    
     # Group indices nicely
     df_cef = df_cef.reset_index()
     df_cef = df_cef.set_index(['region','tech','period','comm'])['value']
@@ -166,10 +167,15 @@ def build_sectors():
             f'VALUES("{region}", {period}, "{dem_comm}", {dem_tot}, "{config.params["energy_units"]}", "{ref.id}", "{data_id}")'
         )
         curs.execute(sql)
+
+        # Zero out tiny proportions and renormalise
+        demand['prop'] = demand['value'] / dem_tot
+        demand['prop'] = demand['prop'].where(demand['prop'] > config.params['prop_thresh'], 0)
+        demand['prop'] /= demand['prop'].sum()
         
         # LimitTechInputSplitAnnual
         for _, row in demand.iterrows():
-            prop = row['value'] / dem_tot
+            prop = row['prop']
             # prop = round(prop, config.params['decimal_places']) # causes issues on sum total not worth
             sql = (
                 'REPLACE INTO '
