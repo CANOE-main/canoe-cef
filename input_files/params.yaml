@@ -2,8 +2,9 @@
 # Canada's Energy Future data
 
 # Must be in ascending order along with all data in tables!
+# This will be indexed less 5 in Temoa (e.g., the 2025 planning period
+# plans for 2030 demand)
 model_periods:
-  - 2025
   - 2030
   - 2035
   - 2040

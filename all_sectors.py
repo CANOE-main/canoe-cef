@@ -135,8 +135,8 @@ def build_sectors():
         )
         curs.execute(sql)
 
-    # 2025 vintage processes for all techs
-    for region, tech, comm in df_cef.xs(2025, level='period').index:
+    # first vintage processes for all techs
+    for region, tech, comm in df_cef.xs(config.model_periods[0], level='period').index:
 
         sector = config.sectors.loc[comm.split("_")[0]]['code']
         data_id = config.data_id(sector, region)
@@ -145,7 +145,7 @@ def build_sectors():
         # Efficiency
         sql = (
             'REPLACE INTO Efficiency(region, input_comm, tech, vintage, output_comm, efficiency, data_id) '
-            f'VALUES("{region}", "{comm}", "{tech}", 2025, "{dem_comm}", 1.0, "{data_id}")'
+            f'VALUES("{region}", "{comm}", "{tech}", {period_index(config.model_periods[0])}, "{dem_comm}", 1.0, "{data_id}")'
         )
         curs.execute(sql)
 
@@ -153,6 +153,8 @@ def build_sectors():
 
     # Demands for each sector
     for (region, tech, period), demand in df_cef.reset_index().groupby(['region','tech','period']):
+
+        p = period_index(period)
 
         sector = config.sectors.loc[tech.split("_")[0]]['code']
         data_id = config.data_id(sector, region)
@@ -164,7 +166,7 @@ def build_sectors():
         # Demand
         sql = (
             'REPLACE INTO Demand(region, period, commodity, demand, units, data_source, data_id) '
-            f'VALUES("{region}", {period}, "{dem_comm}", {dem_tot}, "{config.params["energy_units"]}", "{ref.id}", "{data_id}")'
+            f'VALUES("{region}", {p}, "{dem_comm}", {dem_tot}, "{config.params["energy_units"]}", "{ref.id}", "{data_id}")'
         )
         curs.execute(sql)
 
@@ -180,7 +182,7 @@ def build_sectors():
             sql = (
                 'REPLACE INTO '
                 'LimitTechInputSplitAnnual(region, period, input_comm, tech, operator, proportion, data_source, data_id) '
-                f'VALUES("{region}", {period}, "{row["comm"]}", "{tech}", "le", {prop}, "{ref.id}", "{data_id}")'
+                f'VALUES("{region}", {p}, "{row["comm"]}", "{tech}", "le", {prop}, "{ref.id}", "{data_id}")'
             ) # <= should, in theory, be least likely to cause infeasibility / numerical issues?
             curs.execute(sql)
 
@@ -205,7 +207,7 @@ def build_dsd():
                 for _, row in df_dsd.iterrows():
                     dem_comm = f'{tag}_D_{sector["tech"].lower()}'
                     val = row[f'{region}.{tag}']
-                    data.append((region, period, row['season'], row['tod'], dem_comm, val, data_id))
+                    data.append((region, period_index(period), row['season'], row['tod'], dem_comm, val, data_id))
             progr += 1
             print(f'\rAdding DSDs... {progr/(len(config.model_regions)*len(config.sectors))*100:.0f}% complete.', end="")
     sql = (
@@ -226,6 +228,12 @@ def build_tester():
 
     conn = sqlite3.connect(config.database_file)
     curs = conn.cursor()
+
+    # Commodity
+    sql = (
+        'UPDATE Commodity SET flag = "s" WHERE flag = "a"'
+    )
+    curs.execute(sql)
     
     # Region
     for region in config.model_regions:
@@ -234,27 +242,30 @@ def build_tester():
 
     # TimePeriod
     for i, period in enumerate(config.model_periods):
+
+        period_idx = period_index(period)
+
         sql = (
             'REPLACE INTO TimePeriod(sequence, period, flag) '
-            f'VALUES({i}, {period}, "f")'
+            f'VALUES({i}, {period_idx}, "f")'
         )
         curs.execute(sql)
 
         for idx, row in df_dsd.iterrows():
             sql = (
                 'REPLACE INTO TimeSeason(period, sequence, season) '
-                f'VALUES({period}, {idx}, "{row["season"]}")'
+                f'VALUES({period_idx}, {idx}, "{row["season"]}")'
             )
             curs.execute(sql)
             sql = (
                 'REPLACE INTO TimeSegmentFraction(period, season, tod, segfrac) '
-                f'VALUES({period}, "{row["season"]}", "{row["tod"]}", {1/len(df_dsd)})'
+                f'VALUES({period_idx}, "{row["season"]}", "{row["tod"]}", {1/len(df_dsd)})'
             )
             curs.execute(sql)
 
     sql = (
         'REPLACE INTO TimePeriod(sequence, period, flag) '
-        f'VALUES({i+1}, {period+5}, "f")'
+        f'VALUES({i+1}, {period_idx+5}, "f")'
     )
     curs.execute(sql)
 
@@ -317,6 +328,9 @@ def build_metadata():
     conn.commit()
     conn.close()
 
+
+def period_index(period: int) -> int:
+    return period - 5
 
 if __name__ == "__main__":
     build()
