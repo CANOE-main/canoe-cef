@@ -36,6 +36,9 @@ def build_sectors():
             sector_map[row['cef_sector']] = tag
             technology_map[row['cef_sector']] = row['code']
 
+    # We use period-end data in CANOE, so convert CEF year to period-end
+    df_cef['Year'] -= 5
+
     # Filter relevant data
     df_cef = df_cef[
         (df_cef['Scenario'] == config.params['scenario'])
