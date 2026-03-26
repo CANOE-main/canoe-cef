@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CANOE CEF Sector Documentation</title>
+<style>
+:root {
+    --bg: #ffffff;
+    --fg: #1a1a2e;
+    --accent: #6a1b9a; /* Distinct purple accent color for CEF generalised mode */
+    --accent-light: #f3e5f5;
+    --border: #e1bee7;
+    --code-bg: #faf7fb;
+    --link: #1976d2;
+    --toc-bg: #fdfafd;
+    --sidebar-width: 280px;
+    --max-content: 920px;
+    --table-header-bg: #f3e5f5;
+    --table-stripe: #fbf8fc;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--fg);
+    background: var(--bg);
+}
+
+/* ---- Sidebar navigation ---- */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--toc-bg);
+    border-right: 1px solid var(--border);
+    padding: 1.2rem 1rem;
+    z-index: 100;
+}
+
+#sidebar h2 {
+    margin: 0 0 0.8rem 0;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+}
+
+#sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#sidebar li {
+    margin: 0.15rem 0;
+}
+
+#sidebar a {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    transition: background 0.15s;
+}
+
+#sidebar a:hover, #sidebar a.active {
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+#sidebar .toc-section {
+    margin-top: 1.2rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border);
+}
+
+#sidebar .toc-section-label {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* ---- Main content ---- */
+#content {
+    margin-left: var(--sidebar-width);
+    max-width: var(--max-content);
+    padding: 2rem 2.5rem 4rem 2.5rem;
+}
+
+/* ---- Typography ---- */
+h1 {
+    font-size: 2rem;
+    margin: 2rem 0 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--accent);
+    color: var(--accent);
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin: 2.4rem 0 0.5rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--accent);
+}
+
+h3 {
+    font-size: 1.2rem;
+    margin: 1.8rem 0 0.4rem;
+    color: var(--accent);
+}
+
+h4 {
+    font-size: 1.05rem;
+    margin: 1.4rem 0 0.3rem;
+}
+
+p { margin: 0.6rem 0; }
+
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---- Code ---- */
+code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+}
+
+pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+}
+
+/* ---- Tables ---- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+}
+
+th, td {
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: var(--table-header-bg);
+    font-weight: 600;
+}
+
+tr:nth-child(even) td { background: var(--table-stripe); }
+
+/* ---- Lists ---- */
+ul, ol { padding-left: 1.6rem; }
+li { margin: 0.25rem 0; }
+li > ul, li > ol { margin-top: 0.15rem; }
+
+/* ---- Blockquotes (used for notes) ---- */
+blockquote {
+    margin: 1rem 0;
+    padding: 0.8rem 1.2rem;
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+}
+
+blockquote p { margin: 0.2rem 0; }
+
+/* ---- Horizontal rule ---- */
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+}
+
+/* ---- Section divider ---- */
+.section-divider {
+    margin: 3rem 0;
+    padding: 1.5rem 0 0;
+    border-top: 3px solid var(--accent);
+}
+
+.section-divider h1 {
+    border-bottom: none;
+    margin-top: 0;
+}
+
+/* ---- Print styles ---- */
+@media print {
+    #sidebar { display: none; }
+    #content { margin-left: 0; max-width: 100%; }
+    h1, h2, h3 { break-after: avoid; }
+    table { break-inside: avoid; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+    #sidebar { display: none; }
+    #content { margin-left: 0; padding: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<nav id="sidebar">
+  <h2>CANOE Documentation</h2>
+  <div class="toc-section">
+    <div class="toc-section-label">Data Processing</div>
+    <ul>
+      <li><a href="#canoe-cef-sector-data-processing-documentation">CANOE CEF Sector &mdash; Data Processing</a></li>
+      <li><a href="#table-of-contents">Table of Contents</a></li>
+      <li><a href="#1-overview">1. Overview</a></li>
+      <li><a href="#2-pipeline-architecture">2. Pipeline Architecture</a></li>
+      <li><a href="#3-configuration-and-setup">3. Configuration and Setup</a></li>
+      <li><a href="#4-external-data-handling">4. External Data Handling</a></li>
+      <li><a href="#5-process-and-commodity-generation">5. Process &amp; Commodity Gen</a></li>
+      <li><a href="#6-demands-efficiencies-and-inputs">6. Demands, Eff &amp; Inputs</a></li>
+      <li><a href="#7-time-slicing-dsds">7. Time-Slicing (DSDs)</a></li>
+      <li><a href="#8-known-assumptions-and-limitations">8. Assumptions &amp; Limitations</a></li>
+    </ul>
+  </div>
+  <div class="toc-section">
+    <div class="toc-section-label">Data Sources</div>
+    <ul>
+      <li><a href="#canoe-cef-sector-data-sources-catalog">CANOE CEF Sector &mdash; Data Sources</a></li>
+      <li><a href="#1-data-source-summary">1. Data Source Summary</a></li>
+      <li><a href="#2-cer-canadas-energy-future-cef">2. CER CEF</a></li>
+      <li><a href="#3-internal-dsd-and-mapping-definitions">3. Internal Mappings</a></li>
+      <li><a href="#4-update-procedures-checklist">4. Update Procedures</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main id="content">
+
+<h1 id="canoe-cef-sector-data-processing-documentation">CANOE CEF Sector &mdash; Data Processing Documentation</h1>
+<p><em>Comprehensive documentation of the data pipeline that converts upstream data sources into a Temoa-ready SQLite database for the Canadian Open Energy (CANOE) model's CEF (Canada's Energy Future) generalized sector.</em></p>
+<hr>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-overview">Overview</a></li>
+<li><a href="#2-pipeline-architecture">Pipeline Architecture</a></li>
+<li><a href="#3-configuration-and-setup">Configuration and Setup</a></li>
+<li><a href="#4-external-data-handling">External Data Handling</a></li>
+<li><a href="#5-process-and-commodity-generation">Process and Commodity Generation</a></li>
+<li><a href="#6-demands-efficiencies-and-inputs">Demands, Efficiencies, and Inputs</a></li>
+<li><a href="#7-time-slicing-dsds">Time-Slicing (DSDs)</a></li>
+<li><a href="#8-known-assumptions-and-limitations">Known Assumptions and Limitations</a></li>
+</ol>
+<hr>
+
+<h2 id="1-overview">1. Overview</h2>
+<h3 id="purpose">Purpose</h3>
+<p>The CANOE CEF sector aggregation tool provides a top-down, generalized representation of Canadian energy demand directly inheriting the Canada Energy Regulator's (CER) Energy Futures scenarios. Instead of building detailed, bottom-up operational models (like residential buildings or industrial kilns), this module forces the optimizer to perfectly mirror the top-down macroscopic energy demands and fuel mixes published by the CER.</p>
+<h3 id="what-the-tool-produces">What the Tool Produces</h3>
+<ul>
+<li>A <strong>Temoa-schema SQLite database</strong> containing consolidated technologies, commodities, generic energy demands, specific fuel input bounds (<code>LimitTechInputSplitAnnual</code>), and electricity time-slicing profiles (<code>DemandSpecificDistribution</code>).</li>
+</ul>
+<h3 id="scope">Scope</h3>
+<p>The model operates across:</p>
+<ul>
+<li><strong>Regions</strong>: Configurable Canadian provinces mapped from CER generic regions.</li>
+<li><strong>Sectors</strong>: End-use macro-sectors explicitly defined in mapping CSVs (e.g., Residential, Commercial, Industrial, Transportation).</li>
+<li><strong>Commodities</strong>: Any fuel/energy vectors defined by the CER output structure (Electricity, Natural Gas, Diesel, Biomass, etc.).</li>
+</ul>
+<hr>
+
+<h2 id="2-pipeline-architecture">2. Pipeline Architecture</h2>
+<p>The processing logic is fundamentally contained within a singular orchestrator pattern rather than distinct domain scripts:</p>
+<div class="codehilite"><pre><span></span><code>1. __main__.py          &rarr; Execution trigger
+2. setup.py             &rarr; Instantiates SQLite database, parses `params.yaml`, and loads mapping CSVs
+3. all_sectors.py       
+   a. build_sectors     &rarr; Parses the core CEF CSV, maps domains, drops insignificant flows, and generates topology
+   b. build_tester      &rarr; Establishes generic time-period bounds matching the data years
+   c. build_dsd         &rarr; (Optional) Loads electricity demand-specific distributions mapping summer/winter/day/night profiles
+   d. build_metadata    &rarr; Finalizes dataset labels and reference sources
+</code></pre></div>
+<hr>
+
+<h2 id="3-configuration-and-setup">3. Configuration and Setup</h2>
+<h3 id="general-settings">General Settings</h3>
+<p>Defined in <code>input_files/params.yaml</code>:</p>
+<ul>
+<li><strong><code>sqlite_schema</code></strong>: Points to the base SQL schema file initializing the database.</li>
+<li><strong><code>scenario</code></strong>: Determines which CER scenario to filter for (e.g., 'Global Net-zero').</li>
+<li><strong><code>conversion_factor</code> &amp; <code>decimal_places</code></strong>: Global unit adjustments for standardizing physical energy inputs into the target mathematical constraints.</li>
+<li><strong><code>prop_thresh</code></strong>: A statistical cutoff dropping highly trivial energy streams to simplify the mathematical space for the solver.</li>
+</ul>
+<h3 id="domain-mapping">Domain Mapping</h3>
+<p>Configured meticulously through static CSVs within <code>input_files/</code>:</p>
+<ul>
+<li><strong><code>regions.csv</code></strong>: Maps CER strings to CANOE 2-letter codes.</li>
+<li><strong><code>commodities.csv</code></strong>: Translates output fuel vectors.</li>
+<li><strong><code>sectors.csv</code></strong>: Translates End-Use aggregate domains into functional demand technology branches.</li>
+</ul>
+<hr>
+
+<h2 id="4-external-data-handling">4. External Data Handling</h2>
+<ul>
+<li><strong>CER End-Use Demand</strong>: Unlike sectors that actively scrape APIs, the CEF module expects a downloaded static flat-file snapshot inside the repository natively (e.g., <code>end-use-demand-2023.csv</code>).</li>
+<li>The script utilizes pandas to radically filter this million-row document strictly focusing upon rows intersecting the configured <code>scenario</code>, active map keys, and relevant <code>model_periods</code>.</li>
+</ul>
+<hr>
+
+<h2 id="5-process-and-commodity-generation">5. Process and Commodity Generation</h2>
+<p>Inside <code>all_sectors.py -&gt; build_sectors()</code>:</p>
+<ol>
+<li><strong>Pivoting to Proportions</strong>: Calculates the grand total energy usage for every generated technology node per year. Subsequently maps the proportional share of every fuel making up that total.</li>
+<li><strong>Filtering Noise</strong>: If a specific fuel commodity represents a tiny fraction of the overarching technology bounds (falling under <code>prop_thresh</code>), it is entirely deleted to prevent solver instability from tracking infinitesimal matrices.</li>
+<li><strong>Database Injection</strong>: Generates independent <code>Technology</code>, <code>SectorLabel</code>, and dual variants of <code>Commodity</code> blocks (one strictly for Demands, and one denoting physical Fuels).</li>
+</ol>
+<hr>
+
+<h2 id="6-demands-efficiencies-and-inputs">6. Demands, Efficiencies, and Inputs</h2>
+<ul>
+<li><strong>Efficiencies</strong>: The model assumes <code>Efficiency = 1.0</code> universally for these macro transfers. The required fuel is functionally equated precisely to the output utility constraint representing the top-down statistical reality.</li>
+<li><strong>Demand Rows</strong>: Generates <code>Demand</code> variables defining total volumetric energy needs per province/sector/year matching the extracted CER scenario exactly.</li>
+<li><strong>Input Limits</strong>: Writes constraints exclusively into <code>LimitTechInputSplitAnnual</code>. Instead of allowing the solver freedom to optimize cheaper fuel trajectories, the <code>proportion</code> column rigorously enforces the exact percentage mix dictated by the CER CEF scenario pathway (utilizing the <code>&lt;=</code> or <code>le</code> constraint).</li>
+</ul>
+<hr>
+
+<h2 id="7-time-slicing-dsds">7. Time-Slicing (DSDs)</h2>
+<p>If toggled by <code>use_dsd</code>, the tool executes <code>build_dsd()</code>.</p>
+<ul>
+<li><strong>Electricity Parsing</strong>: Unlike generic annual bounds for physical fuels (NG/Diesel), electricity matrices inherently suffer without time-of-day recognition.</li>
+<li><strong>Mapping</strong>: The module ingests <code>dsd_electricity.csv</code> to partition specifically electrical demand commodities into seasonal (Summer/Winter/Intermediate) and daily (Day/Night) fractions.</li>
+<li><strong>Distribution</strong>: Injects rows into <code>DemandSpecificDistribution</code>, <code>TimeSeason</code>, <code>TimeSegmentFraction</code>, and <code>TimeOfDay</code> to scaffold the temporal slicing inside the SQLite outputs.</li>
+</ul>
+<hr>
+
+<h2 id="8-known-assumptions-and-limitations">8. Known Assumptions and Limitations</h2>
+<ol>
+<li><strong>Rigid Optimistic Modeling</strong>: Since <code>LimitTechInputSplitAnnual</code> is heavily enforced, the resulting Temoa model acting upon this dataset cannot actively optimize fuel-switching based on its own cost curves. It merely verifies and costs out the scenario already pre-calculated by the Canadian Energy Regulator.</li>
+<li><strong>Data Staleness</strong>: Expecting a manual, local flat-file (<code>end-use-demand-2023.csv</code>) means the module does not automatically upgrade its dataset when the CER releases modern revisions unless the repository manager manually downloads and overwrites it.</li>
+<li><strong>Efficiency Staticism (1.0)</strong>: Bypasses complex realities involving technological turnover. It assumes the structural makeup modeled by the CER already resolves underlying efficiency evolutions internally.</li>
+<li><strong>No Disaggregation</strong>: The model inherently accepts massive macro-sectors (e.g., 'Industrial') and ignores complex sub-sector granularity necessary for studying specialized industrial clusters or housing envelopes.</li>
+<li><strong>DSDs are Electricity Only</strong>: Time-slicing strictly profiles electricity. Gas ramping or peak heating burdens functionally disappear into arbitrary annual averaged totals.</li>
+</ol>
+<div class="section-divider">
+  <h1 id="canoe-cef-sector-data-sources-catalog">CANOE CEF Sector &mdash; Data Sources Catalog</h1>
+</div>
+
+<h2 id="1-data-source-summary">1. Data Source Summary</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Data Type</th>
+<th style="text-align: left;">Primary Source</th>
+<th style="text-align: left;">Granularity</th>
+<th style="text-align: left;">Update Frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>End-Use Trajectories</strong></td>
+<td style="text-align: left;">CER Canada's Energy Future</td>
+<td style="text-align: left;">Prov / Macro-Sector</td>
+<td style="text-align: left;">Periodic (1-2 Years)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Electricity Time Slices</strong></td>
+<td style="text-align: left;">Internal Reference CSVs</td>
+<td style="text-align: left;">Hourly/Seasonal Proxy</td>
+<td style="text-align: left;">Static</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Mappings</strong></td>
+<td style="text-align: left;">Internal CSVs</td>
+<td style="text-align: left;">Sector / Fuel Nodes</td>
+<td style="text-align: left;">Static</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-cer-canadas-energy-future-cef">2. CER Canada's Energy Future (CEF)</h2>
+<ul>
+<li><strong>Usage</strong>: Provides the fundamental core logic of the entire model, laying out exactly what technologies consume what fuels, down to exact fractions, tracing out to 2050.</li>
+<li><strong>Update Procedure</strong>: Visit the <a href="https://open.canada.ca/">Canada Energy Regulator's Open Data Portal</a>. Download the newest "End-Use Demand" flat-file representing their newest Energy Futures publication. Rename it locally and ensure the script target inside <code>all_sectors.py</code> accurately aims at the new <code>.csv</code> document.</li>
+</ul>
+<h2 id="3-internal-dsd-and-mapping-definitions">3. Internal DSD and Mapping Definitions</h2>
+<ul>
+<li><strong>Usage</strong>: <code>dsd_electricity.csv</code> constructs proportional temporal slices describing when electricity is demanded across day/night cycles per region. <code>sectors.csv</code>, <code>regions.csv</code>, and <code>commodities.csv</code> ensure translation between CER English schema strings and compact CANOE tokens.</li>
+<li><strong>Update Procedure</strong>: Only demands auditing if the CER inherently alters their macroscopic modeling labels (e.g., splitting "Transportation" into discrete segments requiring updated dictionary keys).</li>
+</ul>
+<h2 id="4-update-procedures-checklist">4. Update Procedures (Checklist)</h2>
+<p>During regular annual or biannual CANOE updates:</p>
+<ol>
+<li><strong>Flat File Download</strong>: Manually procure the updated CER End-Use data file. Place it forcefully in the <code>/input_files/</code> directory.</li>
+<li><strong>Script Update</strong>: Point line <code>23</code> of <code>all_sectors.py</code> (e.g., <code>pd.read_csv(config.input_files + 'end-use-demand-[YEAR].csv')</code>) exactly toward the newly localized version.</li>
+<li><strong>Parameter Audit</strong>: Open <code>params.yaml</code>. Verify the <code>scenario</code> configuration precisely patches a valid internal string inside the newly downloaded CER matrix (e.g., ensuring 'Global Net-zero' didn't transform into 'GNZ2050'). Ensure <code>model_periods</code> correctly aligns with your targeted study bounds.</li>
+<li><strong>Mapping Audit</strong>: If execution fails throwing <code>KeyError</code> mappings, verify the CER didn't rename a fuel or sector label necessitating modifications inside <code>sectors.csv</code> or <code>commodities.csv</code>.</li>
+</ol>
+</main>
+
+</body>
+</html>
