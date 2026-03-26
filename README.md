@@ -5,6 +5,8 @@
 
 This tool takes annual energy demand projections from the [Canada's Energy Future (CEF)](https://www.cer-rec.gc.ca/en/data-analysis/canada-energy-future/) model and converts them into Temoa-compatible annual demands for the CANOE model.
 
+For documentation: [Visit here](https://canoe-main.github.io/canoe-cef/)
+
 ## Features
 
 - **Data Ingestion:** Reads CEF demand data from CSV files.
