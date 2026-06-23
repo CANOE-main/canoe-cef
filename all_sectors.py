@@ -36,6 +36,9 @@ def build_sectors():
             sector_map[row['cef_sector']] = tag
             technology_map[row['cef_sector']] = row['code']
 
+    # We use period-end data in CANOE, so convert CEF year to period-end
+    df_cef['Year'] -= 5
+
     # Filter relevant data
     df_cef = df_cef[
         (df_cef['Scenario'] == config.params['scenario'])
@@ -53,6 +56,9 @@ def build_sectors():
     df_cef['tech'] = df_cef['tag'] + '_' + df_cef['tech']
     df_cef['comm'] = df_cef['tag'] + '_' + df_cef['comm']
     df_cef['period'] = df_cef['Year']
+
+    # hack: change C_dsl and R_dsl to C_oil and R_oil
+    df_cef['comm'] = df_cef['comm'].replace({'C_dsl': 'C_oil', 'R_dsl': 'R_oil'})
 
     # Convert energy units and filter out tiny values
     df_cef['value'] = df_cef['Value'] * config.params['conversion_factor']
