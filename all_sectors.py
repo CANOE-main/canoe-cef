@@ -57,6 +57,9 @@ def build_sectors():
     df_cef['comm'] = df_cef['tag'] + '_' + df_cef['comm']
     df_cef['period'] = df_cef['Year']
 
+    # hack: change C_dsl and R_dsl to C_oil and R_oil
+    df_cef['comm'] = df_cef['comm'].replace({'C_dsl': 'C_oil', 'R_dsl': 'R_oil'})
+
     # Convert energy units and filter out tiny values
     df_cef['value'] = df_cef['Value'] * config.params['conversion_factor']
     df_cef['value'] = df_cef['value'].round(config.params['decimal_places'])
