@@ -1,4 +1,4 @@
-# Configuration for aggregation of simple sector versions based on 
+# Configuration for aggregation of simple sector versions based on
 # Canada's Energy Future data
 
 # Must be in ascending order along with all data in tables!
@@ -10,8 +10,11 @@ model_periods:
   - 2040
   - 2045
 
-sqlite_schema: "canoe_dataset_schema.sql"
 sqlite_database: "cef.sqlite"
+
+# canoe_schema version the shared database was built from (canoe-base's job).
+# build_test_model uses this to fetch the matching canoe_schema.sql DDL too.
+schema_version: "4.0"
 
 # Switches
 force_wipe_database: true
