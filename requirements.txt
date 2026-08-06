@@ -1,2 +1,4 @@
 pandas
 pyyaml
+pydantic
+canoe_schema @ git+https://github.com/CANOE-main/canoe-schema.git@yep/v4
