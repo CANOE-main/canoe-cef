@@ -70,7 +70,7 @@ def build_sectors(cfg: CANOECEFConfig, refs: Bibliography, conn: sqlite3.Connect
     technology_map = cfg.technology_map
 
     # We use period-end data in CANOE, so convert CEF year to period-end
-    df_cef["Year"] -= 5
+    # df_cef["Year"] -= 5 # TODO: Check if this is correct
 
     # Filter relevant data
     df_cef = df_cef[
