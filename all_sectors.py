@@ -90,8 +90,8 @@ def build_sectors(cfg: CANOECEFConfig, refs: Bibliography, conn: sqlite3.Connect
     df_cef["comm"] = df_cef["tag"] + "_" + df_cef["comm"]
     df_cef["period"] = df_cef["Year"]
 
-    # hack: change C_dsl and R_dsl to C_oil and R_oil
-    df_cef["comm"] = df_cef["comm"].replace(cfg.commodity_remap)
+    # hack: change rpp to appropriate
+    df_cef['comm'] = df_cef['comm'].replace({'C_rpp': 'C_oil', 'R_rpp': 'R_oil', "I_rpp": "I_hfo"})
 
     # Convert energy units and filter out tiny values
     df_cef["value"] = df_cef["Value"] * cfg.conversion_factor
