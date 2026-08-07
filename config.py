@@ -10,11 +10,12 @@ config.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Literal
 
 import pandas as pd
 import yaml
-from pydantic import BaseModel, ConfigDict, PrivateAttr
+from pydantic import BaseModel, ConfigDict, PrivateAttr, field_validator
 
 from canoe_schema.v4_0.enums import CommodityTypeCode
 
@@ -64,7 +65,7 @@ class CANOECEFConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     input_files_dir: str = INPUT_FILES_DIR
-    database_file: str
+    database_file: Path
     schema_version: str = "4.0"
 
     model_periods: list[int]
@@ -187,6 +188,11 @@ class CANOECEFConfig(BaseModel):
             commodities=commodities,
             sectors=sectors,
         )
+
+    @field_validator("database_file")
+    @classmethod
+    def expand_path(cls, v: Path) -> Path:
+        return v.expanduser()
 
 
 class Reference(BaseModel):
