@@ -9,22 +9,23 @@ model_periods:
   - 2035
   - 2040
   - 2045
+  - 2050
 
-sqlite_database: "~/OneDrive/dev/canoe-data/master-db/canoe-v4-master.sqlite"
+sqlite_database: "~/data/canoe-pwd/canoe-v4-master.sqlite"
 
 # canoe_schema version the shared database was built from (canoe-base's job).
 # build_test_model uses this to fetch the matching canoe_schema.sql DDL too.
 schema_version: "4.0"
 
 # Switches
-force_wipe_database: true
+force_wipe_database: false
 build_test_model: false
 use_dsd: false
 
 # Which CEF scenario to pull data for
 # "Current Measures", "Canada Net-zero", or "Global Net-zero"
-scenario: "Canada Net-zero"
-data_variant: "NZ" # should resemble the scenario
+scenario: "Global Net-zero"
+data_variant: "GZ" # should resemble the scenario
 data_version: "003"
 
 cef_reference: "Government of Canada, C. E. R. (2023, August 16). CER - Canadas Energy Future 2023: Energy Supply and Demand Projections to 2050. https://www.cer-rec.gc.ca/en/data-analysis/canada-energy-future/2023/"

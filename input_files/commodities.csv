@@ -1,6 +1,6 @@
 ﻿comm,cef_fuel,description,include,flag
 bio,Biofuels & Emerging Energy,biofuel,TRUE,a
-elc,Electricity,electricity,TRUE,a
+elc,Electricity,electricity,TRUE,p
 h2,Hydrogen,hydrogen,TRUE,a
 ng,Natural Gas,natural gas,TRUE,a
 oth,Other,other,FALSE,a
