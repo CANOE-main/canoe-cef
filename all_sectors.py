@@ -33,7 +33,7 @@ import validation
 from config import Bibliography, CANOECEFConfig
 from sql_helpers import upsert_many
 from time_utils import period_index
-
+from electricity_patch import add_electricity_bridges
 
 def build(cfg: CANOECEFConfig | None = None) -> None:
     cfg = cfg or CANOECEFConfig.load()
@@ -186,6 +186,14 @@ def build_sectors(cfg: CANOECEFConfig, refs: Bibliography, conn: sqlite3.Connect
 
     upsert_many(curs, fuel_commodities)
     upsert_many(curs, fuel_commodity_labels)
+
+    # Add electricity-sector transfer technologies
+    add_electricity_bridges(
+        cfg,
+        curs,
+        df_cef,
+    )
+
 
     # First vintage processes for all techs
     efficiencies = []
